@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HomeHQ">
+<meta name="theme-color" content="#F2EEE7">
+<title>HomeHQ</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F2EEE7;--ink:#141414;--muted:#6B6560;--line:#E3DDD3;--card:#FFFFFF;
+  --teal:#0E5E66;--sage:#DFEAD6;--sage-ink:#1F3A1A;--sage-2:#3D5A33;
+  --note:#F6E7A6;--note-2:#5C5340;--danger:#B3261E;
+  --sans:'Archivo',system-ui,-apple-system,sans-serif;--serif:'Instrument Serif',Georgia,serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ground:#121413;--ink:#ECE8E1;--muted:#9A948C;--line:#2A2D2B;--card:#1B1E1C;
+  --teal:#63B5BD;--sage:#1E2A1B;--sage-ink:#D7E6CC;--sage-2:#9CC08C;--note:#3A3420;--note-2:#D9CD9C;
+}}
+:root[data-theme="dark"]{--ground:#121413;--ink:#ECE8E1;--muted:#9A948C;--line:#2A2D2B;--card:#1B1E1C;--teal:#63B5BD;--sage:#1E2A1B;--sage-ink:#D7E6CC;--sage-2:#9CC08C;--note:#3A3420;--note-2:#D9CD9C}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans)}
+body{min-height:100dvh;display:flex;flex-direction:column}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+header{position:sticky;top:0;z-index:2;background:var(--ground);padding:calc(env(safe-area-inset-top) + 14px) 16px 0}
+h1{margin:0;font-family:var(--serif);font-weight:400;font-size:40px;line-height:1.05}
+.sub{font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--muted);margin-top:4px;min-height:15px}
+.tabs{display:flex;gap:8px;margin:14px 0 12px}
+.tabs button{flex:1;height:42px;border-radius:12px;border:1.5px solid var(--line);font-size:14px;font-weight:800;letter-spacing:1px}
+.tabs button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+main{flex:1;padding:0 16px calc(env(safe-area-inset-bottom) + 96px)}
+.view{display:none}.view.on{display:block}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.it{display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 8px 8px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+.chk{width:30px;height:30px;border-radius:50%;border:2px solid var(--sage-2);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff}
+.chk svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.it .t{flex:1;min-width:0;font-size:18px;line-height:1.25;overflow-wrap:anywhere}
+.it.done .chk{background:var(--sage-2)}.it.done .chk svg{opacity:1}
+.it.done .t{text-decoration:line-through;color:var(--muted)}
+.x{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:24px;flex-shrink:0}
+.sec{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--muted);margin:22px 0 10px;display:flex;justify-content:space-between;align-items:center}
+.sec button{font-size:13px;font-weight:800;color:var(--danger);letter-spacing:0;padding:8px 0}
+.empty{font-family:var(--serif);font-style:italic;font-size:24px;color:var(--muted);padding:28px 4px}
+.note{background:var(--note);border:0;align-items:flex-start;padding:14px 8px 14px 16px}
+.note .t{font-family:var(--serif);font-size:22px}
+.note .meta{display:block;font-family:var(--sans);font-size:11px;font-weight:800;letter-spacing:1.3px;color:var(--note-2);margin-bottom:4px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:3;background:var(--ground);border-top:1px solid var(--line);padding:10px 16px calc(env(safe-area-inset-bottom) + 10px);display:flex;gap:8px;align-items:center}
+.bar input{flex:1;min-width:0;height:50px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:0 14px;font:inherit;font-size:17px}
+.bar input:focus{outline:none;border-color:var(--teal)}
+.add{width:50px;height:50px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.add svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.who{display:none;gap:6px}
+.who button{width:40px;height:40px;border-radius:50%;font-size:14px;font-weight:800;color:#141414;opacity:.35;border:2px solid transparent}
+.who button.sel{opacity:1;border-color:var(--ink)}
+body.notes .who{display:flex}
+.err{margin:40px 0;font-size:16px;line-height:1.5;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translateX(-50%);background:var(--ink);color:var(--ground);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Courses</h1>
+  <div class="sub" id="sub"></div>
+  <div class="tabs"><button class="on" data-tab="courses">COURSES</button><button data-tab="notes">NOTES</button></div>
+</header>
+<main>
+  <section class="view on" id="v-courses"><ul id="open"></ul><div id="donewrap"></div></section>
+  <section class="view" id="v-notes"><ul id="notes"></ul></section>
+</main>
+<form class="bar" id="form" autocomplete="off">
+  <div class="who" id="who"></div>
+  <input id="inp" type="text" enterkeyhint="done" placeholder="Ajouter un article…" aria-label="Nouvel élément">
+  <button class="add" type="submit" aria-label="Ajouter"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+</form>
+<div class="toast" id="toast"></div>
+<script>
+(function () {
+  var API = 'https://ufsrwglypwvuindxedoh.supabase.co/functions/v1/homehq';
+  var PEOPLE = [{ nom: 'Ludo', c: '#A8D5E2' }, { nom: 'Loulou', c: '#F4B6C2' }];
+  function $(id) { return document.getElementById(id); }
+  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  // Clé d'accès : dans l'adresse (#k=…) au premier lien, puis mémorisée sur le téléphone
+  var m = location.hash.match(/k=([a-f0-9]+)/), KEY = m ? m[1] : ls('hqk');
+  if (m) ls('hqk', m[1]);
+
+  var tab = ls('tab') === 'notes' ? 'notes' : 'courses';
+  var me = ls('me') === '1' ? 1 : 0;
+  var shop = [], notes = [], busy = 0;
+
+  function toast(t) { var e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { e.classList.remove('on'); }, 1800); }
+  function api(path, body) {
+    var o = { cache: 'no-store' };
+    if (body) { o.method = 'POST'; o.headers = { 'Content-Type': 'application/json' }; o.body = JSON.stringify(body); }
+    return fetch(API + path + '?k=' + KEY, o).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  }
+  function stamp() { var d = new Date(); $('sub').textContent = 'À JOUR · ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+
+  var CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  function renderShop() {
+    var open = shop.filter(function (x) { return !x.fait; }), done = shop.filter(function (x) { return x.fait; });
+    $('open').innerHTML = open.length ? open.map(function (x) {
+      return '<li class="it" data-id="' + x.id + '"><button class="chk" data-t="' + x.id + '" aria-label="Cocher">' + CHECK + '</button><span class="t" data-t="' + x.id + '">' + esc(x.texte) + '</span><button class="x" data-d="' + x.id + '" aria-label="Supprimer">×</button></li>';
+    }).join('') : '<li class="empty">Rien à acheter pour l’instant.</li>';
+    $('donewrap').innerHTML = done.length ? '<div class="sec"><span>DANS LE PANIER · ' + done.length + '</span><button data-clear>Retirer</button></div><ul>' + done.map(function (x) {
+      return '<li class="it done"><button class="chk" data-t="' + x.id + '" aria-label="Décocher">' + CHECK + '</button><span class="t" data-t="' + x.id + '">' + esc(x.texte) + '</span><button class="x" data-d="' + x.id + '" aria-label="Supprimer">×</button></li>';
+    }).join('') + '</ul>' : '';
+    if (tab === 'courses') $('sub').dataset.n = open.length;
+  }
+  function fmtWhen(s) {
+    var d = new Date(s), t = new Date(), y = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 1);
+    var hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    if (d.toDateString() === t.toDateString()) return hm;
+    if (d.toDateString() === y.toDateString()) return 'HIER ' + hm;
+    return d.getDate() + '/' + (d.getMonth() + 1) + ' ' + hm;
+  }
+  function renderNotes() {
+    $('notes').innerHTML = notes.length ? notes.map(function (n) {
+      return '<li class="it note"><span class="t"><span class="meta">' + esc(PEOPLE[n.auteur] ? PEOPLE[n.auteur].nom.toUpperCase() : '') + ' · ' + fmtWhen(n.created_at) + '</span>' + esc(n.texte) + '</span><button class="x" data-nd="' + n.id + '" aria-label="Supprimer">×</button></li>';
+    }).join('') : '<li class="empty">Aucune note.</li>';
+  }
+  function renderWho() {
+    $('who').innerHTML = PEOPLE.map(function (p, i) { return '<button type="button" data-me="' + i + '" class="' + (i === me ? 'sel' : '') + '" style="background:' + p.c + '" aria-label="' + p.nom + '">' + p.nom.charAt(0) + '</button>'; }).join('');
+  }
+  function setTab(t) {
+    tab = t; ls('tab', t);
+    document.body.classList.toggle('notes', t === 'notes');
+    $('title').textContent = t === 'notes' ? 'Notes' : 'Courses';
+    $('inp').placeholder = t === 'notes' ? 'Écrire une note…' : 'Ajouter un article…';
+    [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === t); });
+    $('v-courses').classList.toggle('on', t === 'courses'); $('v-notes').classList.toggle('on', t === 'notes');
+  }
+
+  function loadAll() {
+    if (busy) return;
+    return Promise.all([api('/courses'), api('/notes')]).then(function (r) {
+      if (busy) return;
+      shop = r[0].courses || []; notes = r[1].notes || []; renderShop(); renderNotes(); stamp();
+    }).catch(function () { $('sub').textContent = 'HORS LIGNE · NOUVEL ESSAI…'; });
+  }
+  function shopOp(body) {
+    busy++;
+    return api('/courses', body).then(function (d) { shop = d.courses || []; }).catch(function () { toast('Pas de connexion, réessaie'); })
+      .then(function () { busy--; renderShop(); stamp(); });
+  }
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tab],[data-t],[data-d],[data-clear],[data-nd],[data-me]'); if (!b) return;
+    if (b.hasAttribute('data-tab')) return setTab(b.getAttribute('data-tab'));
+    if (b.hasAttribute('data-me')) { me = +b.getAttribute('data-me'); ls('me', me); renderWho(); return; }
+    if (b.hasAttribute('data-t')) {   // cocher : affichage immédiat, puis serveur
+      var id = +b.getAttribute('data-t');
+      shop.forEach(function (x) { if (x.id === id) x.fait = !x.fait; }); renderShop();
+      return shopOp({ op: 'toggle', id: id });
+    }
+    if (b.hasAttribute('data-d')) { var di = +b.getAttribute('data-d'); shop = shop.filter(function (x) { return x.id !== di; }); renderShop(); return shopOp({ op: 'del', id: di }); }
+    if (b.hasAttribute('data-clear')) { shop = shop.filter(function (x) { return !x.fait; }); renderShop(); return shopOp({ op: 'clear' }); }
+    if (b.hasAttribute('data-nd')) {
+      var ni = +b.getAttribute('data-nd'); notes = notes.filter(function (n) { return n.id !== ni; }); renderNotes();
+      api('/notes', { op: 'del', id: ni }).then(function (d) { notes = d.notes || []; renderNotes(); }).catch(function () { toast('Pas de connexion, réessaie'); });
+    }
+  });
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = $('inp').value.trim(); if (!v) return;
+    $('inp').value = '';
+    if (tab === 'courses') {
+      shop.push({ id: -Date.now(), texte: v, fait: false }); renderShop();
+      shopOp({ op: 'add', texte: v });
+    } else {
+      api('/notes', { op: 'add', texte: v, auteur: me }).then(function (d) { notes = d.notes || []; renderNotes(); })
+        .catch(function () { $('inp').value = v; toast('Pas de connexion, réessaie'); });
+    }
+  });
+
+  renderWho(); setTab(tab);
+  if (!KEY) { $('v-courses').innerHTML = '<p class="err">Ouvre cette page avec le lien complet envoyé par Ludo (il contient la clé d’accès).</p>'; $('form').style.display = 'none'; return; }
+  loadAll();
+  setInterval(function () { if (!document.hidden) loadAll(); }, 15000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) loadAll(); });
+})();
+</script>
+</body>
+</html>
