@@ -47,6 +47,12 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
 .it.done .t{text-decoration:line-through;color:var(--muted)}
 .x{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:24px;flex-shrink:0}
 .sec{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--muted);margin:22px 0 10px;display:flex;justify-content:space-between;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:38px;padding:0 14px;border-radius:19px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px}
+.chip.in{background:var(--sage);border-color:var(--sage-2);color:var(--sage-ink)}
+.chip.in::before{content:'✓';font-weight:800}
+.chip .n{font-size:11px;font-weight:800;color:var(--muted)}
+.chip.more{border-style:dashed;color:var(--muted)}
 .sec button{font-size:13px;font-weight:800;color:var(--danger);letter-spacing:0;padding:8px 0}
 .empty{font-family:var(--serif);font-style:italic;font-size:24px;color:var(--muted);padding:28px 4px}
 .note{background:var(--note);border:0;align-items:flex-start;padding:14px 8px 14px 16px}
@@ -124,7 +130,7 @@ textarea{width:100%;min-height:96px;border-radius:12px;border:1.5px solid var(--
   <div class="tabs"><button class="on" data-tab="courses">COURSES</button><button data-tab="notes">NOTES</button><button data-tab="plantes">PLANTES</button></div>
 </header>
 <main>
-  <section class="view on" id="v-courses"><ul id="open"></ul><div id="donewrap"></div></section>
+  <section class="view on" id="v-courses"><ul id="open"></ul><div id="sugg"></div><div id="donewrap"></div></section>
   <section class="view" id="v-notes"><ul id="notes"></ul></section>
   <section class="view" id="v-plantes"><div class="pl-top"><button id="pl-season"></button><button id="pl-import">Importer une sauvegarde</button></div><ul id="plist"></ul></section>
 </main>
@@ -174,6 +180,28 @@ textarea{width:100%;min-height:96px;border-radius:12px;border:1.5px solid var(--
       return '<li class="it done"><button class="chk" data-t="' + x.id + '" aria-label="Décocher">' + CHECK + '</button><span class="t" data-t="' + x.id + '">' + esc(x.texte) + '</span><button class="x" data-d="' + x.id + '" aria-label="Supprimer">×</button></li>';
     }).join('') + '</ul>' : '';
     if (tab === 'courses') $('sub').dataset.n = open.length;
+    renderSugg(open);
+  }
+  // Articles fréquents : les plus ajoutés d'abord (compteur serveur), puis une liste de base
+  var BASE = ['Lait', 'Pain', 'Œufs', 'Beurre', 'Yaourts', 'Fromage râpé', 'Crème', 'Jambon', 'Poulet', 'Viande hachée', 'Saumon',
+    'Pâtes', 'Riz', 'Farine', 'Sucre', 'Huile d’olive', 'Café', 'Thé', 'Tomates', 'Salade', 'Oignons', 'Ail', 'Pommes de terre',
+    'Carottes', 'Courgettes', 'Pommes', 'Bananes', 'Citrons', 'Eau gazeuse', 'Papier toilette', 'Essuie-tout', 'Liquide vaisselle',
+    'Lessive', 'Sacs poubelle'];
+  var freq = [], suggAll = false;
+  try { freq = JSON.parse(localStorage.getItem('hq_freq') || '[]'); } catch (e) {}
+  function renderSugg(open) {
+    var inList = {}, seen = {}, out = [];
+    open.forEach(function (x) { inList[x.texte.trim().toLowerCase()] = x.id; });
+    var push = function (t, n) { var k = t.trim().toLowerCase(); if (!seen[k]) { seen[k] = 1; out.push({ t: t, n: n }); } };
+    freq.forEach(function (f) { if (f.n >= 2) push(f.texte, f.n); });
+    BASE.forEach(function (b) { push(b, 0); });
+    freq.forEach(function (f) { if (f.n < 2) push(f.texte, f.n); });
+    out = out.slice(0, 30);
+    var vis = suggAll ? out : out.slice(0, 14);
+    $('sugg').innerHTML = '<div class="sec"><span>FRÉQUENTS · TOUCHER POUR AJOUTER</span></div><div class="chips">' + vis.map(function (s) {
+      var id = inList[s.t.trim().toLowerCase()], inl = id != null;
+      return '<button class="chip' + (inl ? ' in' : '') + '" data-sg="' + esc(s.t) + '"' + (inl ? ' data-sgin="' + id + '"' : '') + '>' + esc(s.t) + (s.n >= 2 ? ' <span class="n">×' + s.n + '</span>' : '') + '</button>';
+    }).join('') + (out.length > 14 ? '<button class="chip more" data-sgmore>' + (suggAll ? 'Moins' : '+ ' + (out.length - 14) + ' autres') + '</button>' : '') + '</div>';
   }
   function fmtWhen(s) {
     var d = new Date(s), t = new Date(), y = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 1);
@@ -206,17 +234,23 @@ textarea{width:100%;min-height:96px;border-radius:12px;border:1.5px solid var(--
     if (busy) return;
     return Promise.all([api('/courses'), api('/notes')]).then(function (r) {
       if (busy) return;
-      shop = r[0].courses || []; notes = r[1].notes || []; renderShop(); renderNotes(); stamp();
+      shop = r[0].courses || []; if (r[0].frequents) { freq = r[0].frequents; try { localStorage.setItem('hq_freq', JSON.stringify(freq)); } catch (e) {} } notes = r[1].notes || []; renderShop(); renderNotes(); stamp();
     }).catch(function () { $('sub').textContent = 'HORS LIGNE · NOUVEL ESSAI…'; });
   }
   function shopOp(body) {
     busy++;
-    return api('/courses', body).then(function (d) { shop = d.courses || []; }).catch(function () { toast('Pas de connexion, réessaie'); })
+    return api('/courses', body).then(function (d) { shop = d.courses || []; if (d.frequents) freq = d.frequents; }).catch(function () { toast('Pas de connexion, réessaie'); })
       .then(function () { busy--; renderShop(); stamp(); });
   }
 
   document.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-tab],[data-t],[data-d],[data-clear],[data-nd],[data-me]'); if (!b) return;
+    var b = e.target.closest('[data-tab],[data-t],[data-d],[data-clear],[data-nd],[data-me],[data-sg],[data-sgmore]'); if (!b) return;
+    if (b.hasAttribute('data-sgmore')) { suggAll = !suggAll; return renderShop(); }
+    if (b.hasAttribute('data-sg')) {
+      if (b.hasAttribute('data-sgin')) { var si = +b.getAttribute('data-sgin'); shop = shop.filter(function (x) { return x.id !== si; }); renderShop(); return shopOp({ op: 'del', id: si }); }
+      var sv = b.getAttribute('data-sg'); shop.push({ id: -Date.now(), texte: sv, fait: false }); renderShop();
+      return shopOp({ op: 'add', texte: sv });
+    }
     if (b.hasAttribute('data-tab')) return setTab(b.getAttribute('data-tab'));
     if (b.hasAttribute('data-me')) { me = +b.getAttribute('data-me'); ls('me', me); renderWho(); return; }
     if (b.hasAttribute('data-t')) {   // cocher : affichage immédiat, puis serveur
