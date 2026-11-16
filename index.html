@@ -191,7 +191,7 @@ textarea{width:100%;min-height:96px;border-radius:12px;border:1.5px solid var(--
   try { freq = JSON.parse(localStorage.getItem('hq_freq') || '[]'); } catch (e) {}
   function renderSugg(open) {
     var inList = {}, seen = {}, out = [];
-    open.forEach(function (x) { inList[x.texte.trim().toLowerCase()] = x.id; });
+    open.forEach(function (x) { inList[x.texte.replace(/\s*\(.*\)\s*$/, '').trim().toLowerCase()] = x.id; });
     var push = function (t, n) { var k = t.trim().toLowerCase(); if (!seen[k]) { seen[k] = 1; out.push({ t: t, n: n }); } };
     freq.forEach(function (f) { if (f.n >= 2) push(f.texte, f.n); });
     BASE.forEach(function (b) { push(b, 0); });
